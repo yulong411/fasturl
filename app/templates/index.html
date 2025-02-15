@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+
+{% block title %}
+FastURL 
+{% endblock %}
+
+{% block main %}
+<main class="d-flex justify-content-center align-items-center min-vh-100">
+    <div class="container d-flex justify-content-center align-items-center bg-light w-auto border border-2 shadow-sm p-4" style="border-radius: 0.5rem;">
+        <form>
+            <div class="container d-flex justify-content-center flex-column">
+                <div class="container text-center mb-3">
+                    <h1 class="fw-bold">Paste your URL below</h1>
+                </div>
+                <div class="container mb-3">
+                    <input class="form-control form-control-lg" autofocus type="text" name="url" placeholder="https://example.com">
+                </div>
+                <div class="container mb-3">
+                    <button class="btn btn-lg w-100 text-white">Shorten this URL</button>
+                </div>
+                <div class="container mb-3 text-center">
+                    <small>If you do not have account, your urls only work for 7 days</small>
+                </div>
+            </div>
+        </form>
+    </div>
+</main>
+{% endblock %}

@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+
+{% block title %}
+Dashboard
+{% endblock %}
+
+{% block main %}
+<main class="d-flex min-vh-100 p-3 flex-column">
+    <div class="title-row d-flex justify-content-center w-100 mb-4">
+        <h1>Hi, {{ username }}.</h1>
+    </div>
+    <div class="mx-5">
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th scope="col">#</th>
+                    <th scope="col">Short URLs</th>
+                    <th scope="col">Long URLs</th>
+                    <th scope="col">Click counts</th>
+                    <th scope="col">Created at</th>
+                    <th scope="col">Expire date</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <th scope="row">1</th>
+                    <td>fasturl.co</td>
+                    <td>superlongfasturl.co</td>
+                    <td>10</td>
+                    <td>06/12/2004</td>
+                    <td>12/12/2004</td>                        
+                </tr>
+                <tr>
+                    <th scope="row">1</th>
+                    <td>fasturl.co</td>
+                    <td>superlongfasturl.co</td>
+                    <td>10</td>
+                    <td>06/12/2004</td>
+                    <td>12/12/2004</td>                        
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</main>
+{% endblock %}
