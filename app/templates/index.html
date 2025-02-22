@@ -7,22 +7,93 @@ FastURL
 {% block main %}
 <main class="d-flex justify-content-center align-items-center min-vh-100">
     <div class="container d-flex justify-content-center align-items-center bg-light w-auto border border-2 shadow-sm p-4" style="border-radius: 0.5rem;">
-        <form>
+        <form action="{{ url_for('url.shorten_url') }}" method="post">
+            <div class="container mb-4">
+                <h1 class="fw-bold">Paste your URL below</h1>
+            </div>
             <div class="container d-flex justify-content-center flex-column">
-                <div class="container text-center mb-3">
-                    <h1 class="fw-bold">Paste your URL below</h1>
-                </div>
-                <div class="container mb-3">
-                    <input class="form-control form-control-lg" autofocus type="text" name="url" placeholder="https://example.com">
-                </div>
-                <div class="container mb-3">
-                    <button class="btn btn-lg w-100 text-white">Shorten this URL</button>
-                </div>
+                {% if shorted_url %}
+                    <div class="container input-group mb-3">
+                        <input readonly class="form-control form-control-lg shorted-url" autofocus type="text" aria-describedby="button-addon2" name="shorted-url" value="{{ shorted_url }}">
+                        <button type="button" id="button-addon2" class="copy-button btn btn-lg text-white">Copy</button>
+                    </div>
+                {% else %}
+                    <div class="container input-group mb-3">
+                        <input class="form-control form-control-lg" autofocus type="text" name="url" placeholder="https://example.com">
+                    </div>
+                    <div class="container input-group mb-3">
+                        <button type="submit" class="btn btn-lg w-100 text-white">Shorten this URL</button>
+                    </div>
+                {% endif %}
                 <div class="container mb-3 text-center">
                     <small>If you do not have account, your urls only work for 7 days</small>
                 </div>
             </div>
         </form>
     </div>
+
+    {% with messages = get_flashed_messages() %}
+        {% if messages %}
+            <div class="position-fixed bottom-0 end-0 p-3" style="z-index: 1050;">
+                {% for message in messages %}
+                    {% if message is mapping %}
+                        {% for k, v in message.items() %}
+                            <div class="toast align-items-center text-white bg-danger border-0" role="alert" aria-live="assertive" aria-atomic="true">
+                                <div class="d-flex">
+                                    <div class="toast-body">
+                                        {{ v[0] }}
+                                    </div>
+                                    <button type="button" class="btn-close bg-danger me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    {% else %}
+                        <div class="toast align-items-center text-white bg-danger border-0" role="alert" aria-live="assertive" aria-atomic="true">
+                            <div class="d-flex">
+                                <div class="toast-body">
+                                    {{ message }}
+                                </div>
+                                <button type="button" class="btn-close bg-danger me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+                            </div>
+                        </div>
+                    {% endif %}
+                {% endfor %}
+            </div>
+        {% endif %}
+    {% endwith %}
 </main>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        let toastElList = [].slice.call(document.querySelectorAll('.toast'));
+        toastElList.forEach(function(toastEl) {
+            let toast = new bootstrap.Toast(toastEl, { delay: 5000 });
+            toast.show();
+        });
+    });
+    
+    document.addEventListener("DOMContentLoaded", function() {
+        let copyButton = document.querySelector(".copy-button");
+        let shortedUrlInput = document.querySelector(".shorted-url");
+
+        copyButton.addEventListener("click", function() {
+            shortedUrlInput.select();
+            shortedUrlInput.setSelectionRange(0, 99999);
+
+            navigator.clipboard.writeText(shortedUrlInput.value).then(function() {
+                copyButton.textContent = "Copied!";
+                copyButton.classList.add("btn-success");
+
+                setTimeout(function() {
+                    copyButton.textContent = "Copy";
+                    copyButton.classList.remove("btn-success");
+                }, 2000);
+            }).catch(function(error) {
+                console.error("Copy failed!", error);
+            });
+        });
+    });
+</script>
+
+</script>
 {% endblock %}

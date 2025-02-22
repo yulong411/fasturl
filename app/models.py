@@ -1,6 +1,9 @@
 from marshmallow import Schema, fields, validates_schema, ValidationError
 from flask_login import UserMixin
-from datetime import datetime, timezone
+from datetime import datetime, timezone, timedelta
+from requests import head, ConnectionError, Timeout, RequestException
+from db import client
+from werkzeug.security import check_password_hash
 
 class User(UserMixin):
     def __init__(self, id):
@@ -13,27 +16,26 @@ class LoginSchema(Schema):
 
     @validates_schema
     def validate_credentials(self, data, **kwargs):
-        if not data.get('username'):
+        username = data.get('username')
+        password = data.get('password')
+
+        if not username:
             raise ValidationError('Username is required')
         
-        if not data.get('password'):
-            raise ValidationError('Password is required')
-        
-        if len(data.get('password')) < 8:
-            raise ValidationError('Password must be at least 8 characters long')
-        
-        if not data.get('username').isalnum():
+        if not username.isalnum():
             raise ValidationError('Username must contain only letters and numbers')
         
-        from db import client
-        from werkzeug.security import check_password_hash
-
-        user = client.db.users.find_one({'username': data['username']})
+        if not password:
+            raise ValidationError('Password is required')
+        
+        if len(password) < 8:
+            raise ValidationError('Password must be at least 8 characters long')
+        
+        user = client.db.users.find_one({'username': username})
 
         if not user:
-            raise ValidationError('Invalid username')
-        
-        if not check_password_hash(user['password'], data['password']): 
+            raise ValidationError('Invalid username')   
+        elif not check_password_hash(user['password'], password): 
             raise ValidationError('Invalid password')
 
 class RegisterSchema(LoginSchema):
@@ -42,43 +44,75 @@ class RegisterSchema(LoginSchema):
 
     @validates_schema
     def validate_credentials(self, data, **kwargs):
-        if not data.get('username'):
+        username = data.get('username')
+        password = data.get('password')
+        email = data.get('email')
+
+        if not username:
             raise ValidationError('Username is required')
         
-        if not data.get('password'):
+        if not password:
             raise ValidationError('Password is required')
         
-        if not data.get('email'):
+        if not email:
             raise ValidationError('Email is required')
         
-        if len(data.get('password')) < 8:
+        if len(password) < 8:
             raise ValidationError('Password must be at least 8 characters long')
         
-        if not data.get('username').isalnum():
+        if not username.isalnum():
             raise ValidationError('Username must contain only letters and numbers')
         
-        if data.get('password') != data.get('repassword'):
+        if password != data.get('repassword'):
             raise ValidationError('Password does not match')
         
         from db import client
 
-        user = client.db.users.find_one({'username': data['username']})
+        user = client.db.users.find_one({'username': username})
 
         if user:
             raise ValidationError('Username already exists')
         
-        mail = client.db.users.find_one({'email': data['email']})
+        is_email_exist = client.db.users.find_one({'email': email})
 
-        if mail:
+        if is_email_exist:
             raise ValidationError('Email already exists')
         
 class UrlSchema(Schema):
-    user_id = fields.String(required=True)
-    original = fields.String(required=True) 
-    shorted = fields.String(dump_only=True)
+    user_id = fields.String()
+    url = fields.String() 
+    shorted_code = fields.String()
     click_count = fields.Integer(missing=0)
-    created_at = fields.DateTime(dump_only=True, missing=datetime.now(timezone.utc))
-    expire_date = fields.Date(required=False)
-    last_clicked_at = fields.DateTime(required=False)
+    created_at = fields.DateTime(missing=lambda: datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S"))
+    expire_date = fields.DateTime()
+    last_clicked_at = fields.DateTime()
 
+    @validates_schema
+    def validate_url(self, data, **kwargs):
+        url = data.get('url')
+        shorted_code = data.get('shorted_code')
 
+        if not url: 
+            raise ValidationError('Missing data')
+
+        from .utils import UrlRegex 
+        if not UrlRegex().validate_url(url): 
+            raise ValidationError('Invalid URL')
+
+        try: 
+            response = head(url, timeout=5)
+            if response.status_code not in (200, 301, 302): 
+                raise ValidationError('URL is not working')
+        except ConnectionError: 
+            raise ValidationError('URL unreachable')
+        except Timeout: 
+            raise ValidationError('URL timed out')
+        except RequestException as err: 
+            raise ValidationError(err)
+        
+        user_id = data.get('user_id')
+
+        if not user_id:
+            data['expire_date'] = data.get('created_at') + timedelta(days=7)
+        else: 
+            data['expire_date'] = None

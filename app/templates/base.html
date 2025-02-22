@@ -20,7 +20,7 @@
         <!--navigation bar a.k.a header-->
         <nav class="navbar navbar-expand-lg bg-light">
             <div class="container-fluid">
-                <a class="navbar-brand mx-4" href="index.html">
+                <a class="navbar-brand mx-4" href="{{ url_for('main.index')}}">
                     <img class="img-fluid" src="../static/logo.svg" alt="Fast URL logo" width="80" height="80">
                 </a>
 
@@ -35,13 +35,18 @@
                         <li class="nav-item">
                             <a class="nav-link" href="{{ url_for('auth.register')}}">Sign Up</a>
                         </li>
-                        <li class="nav-item">
-                            {% if current_user.is_authenticated %}
+                        {% if current_user.is_authenticated %}
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('main.dashboard')}}">Dashboard</a>
+                    </li>
+                            <li class="nav-item">
                                 <a class="nav-link" href="{{ url_for('auth.logout')}}">Sign Out</a>
-                            {% else %}
+                            </li>
+                        {% else %}
+                            <li class="nav-item">
                                 <a class="nav-link" href="{{ url_for('auth.login')}}">Sign In</a>
-                            {% endif %}
-                        </li>
+                            </li>
+                        {% endif %}
                     </ul>
                 </div>
             </div>

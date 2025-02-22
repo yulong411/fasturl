@@ -13,31 +13,25 @@ Dashboard
         <table class="table table-striped">
             <thead>
                 <tr>
-                    <th scope="col">#</th>
                     <th scope="col">Short URLs</th>
                     <th scope="col">Long URLs</th>
                     <th scope="col">Click counts</th>
                     <th scope="col">Created at</th>
                     <th scope="col">Expire date</th>
+                    <th scope="col">Last clicked at</th>
                 </tr>
             </thead>
             <tbody>
-                <tr>
-                    <th scope="row">1</th>
-                    <td>fasturl.co</td>
-                    <td>superlongfasturl.co</td>
-                    <td>10</td>
-                    <td>06/12/2004</td>
-                    <td>12/12/2004</td>                        
-                </tr>
-                <tr>
-                    <th scope="row">1</th>
-                    <td>fasturl.co</td>
-                    <td>superlongfasturl.co</td>
-                    <td>10</td>
-                    <td>06/12/2004</td>
-                    <td>12/12/2004</td>                        
-                </tr>
+                {% for data in url_data %}
+                    <tr>
+                        <td>{{ data['shorted_code'] }}</td>
+                        <td class="text-break" style="max-width: 300px;">{{ data['url'] }}</td>
+                        <td>{{ data['click_count'] }}</td>
+                        <td>{{ data['created_at'] }}</td>
+                        <td>{{ data['expire_at'] }}</td> 
+                        <td>{{ data['last_clicked_at'] }}</td>                       
+                    </tr>
+                {% endfor %}
             </tbody>
         </table>
     </div>
